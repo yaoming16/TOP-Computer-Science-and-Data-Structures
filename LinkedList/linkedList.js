@@ -3,6 +3,7 @@ import Node from "./node.js";
 export default class LinkedList {
     constructor () {
         this.listHead = null;
+        this.length = 0;
     }
 
     //adds a new node containing value to the end of the list
@@ -11,6 +12,7 @@ export default class LinkedList {
 
         if (!this.listHead) {
             this.listHead = newNode;
+            this.length++;
             return;
         }
 
@@ -19,6 +21,7 @@ export default class LinkedList {
             currentNode = currentNode.nextNode;
         }
         currentNode.nextNode = newNode;
+        this.length++;
         return;
     }
 
@@ -27,18 +30,13 @@ export default class LinkedList {
         let newNode = new Node(value);
         newNode.nextNode = this.listHead;
         this.listHead = newNode;
+        this.length++;
 
     }
 
     //returns the total number of nodes in the list.
     size() {
-        let currentNode = this.listHead;
-        let count = 0;
-        while (currentNode) {
-            count++;
-            currentNode = currentNode.nextNode;
-        }
-        return count;
+        return this.length;
     }
 
     //should return the value of the first node in the list. If the list is empty, it should return undefined
@@ -63,13 +61,17 @@ export default class LinkedList {
 
     //should return the value of the node at the given index. If there’s no node at the given index, it should return undefined.
     at(index) {
+        if (index < 0) {
+            return undefined;
+        }
+    
         let currentNode = this.listHead;
-        let nodeIndex = 1;
+        let nodeIndex = 0;
         while (currentNode && nodeIndex < index) {
             currentNode = currentNode.nextNode;
             nodeIndex++;
         }
-        if (nodeIndex === index) {
+        if (currentNode && nodeIndex === index) {
             return currentNode;
         } else {
             return undefined;
@@ -84,6 +86,9 @@ export default class LinkedList {
         let nodeToReturn = this.listHead;
         this.listHead = this.listHead.nextNode;
         nodeToReturn.nextNode = null;
+        if (this.length > 0) {
+            this.length--;
+        }
 
         return nodeToReturn;
     }
@@ -102,7 +107,7 @@ export default class LinkedList {
     // If more than one node has a value matching the given value, it should return the index of the first node with the matching value.
     findIndex(value) {
         let currentNode = this.listHead;
-        let index = 1;
+        let index = 0;
         while(currentNode && currentNode.value !== value) {
             currentNode = currentNode.nextNode;
             index++;
@@ -133,5 +138,66 @@ export default class LinkedList {
         return string;
     }
 
-    
+    //should insert new nodes with the given values at the given index
+    insertAt(index, ...values) {
+        let listSize = this.size();
+        if (index < 0) {
+            throw new RangeError("Index is below 0");
+        }
+        if (index >= listSize) {
+            throw new RangeError("Index is above max index of " + (listSize - 1));
+        }
+
+        if (index === 0) {
+            for (let i = values.length - 1; i>= 0; i--) {
+                this.prepend(values[i]);
+            }
+            return;
+        }
+
+        let previousNode = this.listHead;
+        let currentIndex = 0;
+        while (currentIndex !== index - 1) {
+            previousNode = previousNode.nextNode;
+            currentIndex++;
+        }
+        for (let i = values.length - 1; i >= 0; i--) {
+            let node = new Node(values[i]);
+            node.nextNode = previousNode.nextNode;
+            previousNode.nextNode = node;
+            this.length++;
+        }
+    }
+
+    //that removes the node at the given index. If the given index is out of bounds 
+    // (below 0 or greater than or equal to the list’s size), throw a RangeError
+    removeAt(index) {
+        let listSize = this.size();
+        if (index < 0) {
+            throw new RangeError("Index is below 0");
+        }
+        if (index >= listSize) {
+            throw new RangeError("Index is above max index of " + (listSize - 1));
+        }
+
+        if (index === 0) {
+            const removedHead = this.pop();
+            return removedHead;
+        }
+
+        let previousNode = this.listHead;
+        let currentIndex = 0;
+        while (currentIndex !== index - 1) {
+            previousNode = previousNode.nextNode;
+            currentIndex++;
+        }
+        const removed = previousNode.nextNode;
+        previousNode.nextNode = removed ? removed.nextNode : null;
+        if (removed) {
+            removed.nextNode = null;
+        }
+        this.length--;
+        return removed;
+
+    }
 }
